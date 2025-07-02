@@ -1,29 +1,25 @@
+use crate::runnable::Runnable;
 use crate::AppContainer;
 use log::info;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use teloxide::respond;
 use teloxide::types::Message;
-use crate::runnable::Runnable;
 
 #[derive(Clone, Debug)]
 pub struct TelegramBot {
-    teloxide_bot: Arc<teloxide::Bot>,
     container: Arc<AppContainer>,
 }
 
 impl TelegramBot {
-    pub fn new(token: String, app_container: Arc<AppContainer>) -> Self {
-        let bot = teloxide::Bot::new(token);
-
-        TelegramBot {
-            teloxide_bot: Arc::new(bot),
+    pub fn new(app_container: Arc<AppContainer>) -> Self {
+        Self {
             container: app_container,
         }
     }
 
     pub fn get_teloxide_bot(&self) -> Arc<teloxide::Bot> {
-        Arc::clone(&self.teloxide_bot)
+        Arc::clone(&self.container.teloxide_bot)
     }
 }
 

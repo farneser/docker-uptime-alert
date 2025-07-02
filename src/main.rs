@@ -38,15 +38,17 @@ pub struct AppContainer {
     pub counter: Arc<AtomicU32>,
     pub container_states: Arc<Mutex<HashMap<String, ContainerStatus>>>,
     pub alert_queue: Arc<Mutex<VecDeque<AlertMessage>>>,
+    pub teloxide_bot: Arc<teloxide::Bot>,
 }
 
 impl AppContainer {
-    pub fn new(docker: Docker) -> Self {
+    pub fn new(docker: Docker, bot: teloxide::Bot) -> Self {
         AppContainer {
             docker,
             counter: Arc::new(AtomicU32::new(0)),
             container_states: Arc::new(Mutex::new(HashMap::new())),
             alert_queue: Arc::new(Mutex::new(VecDeque::new())),
+            teloxide_bot: Arc::new(bot),
         }
     }
 
@@ -68,14 +70,13 @@ async fn main() {
     let docker = Docker::connect_with_socket(config.docker_socket.as_str(), 20, API_DEFAULT_VERSION)
             .expect("Failed to connect to Docker");
 
-    let container = Arc::new(AppContainer::new(docker));
+    let bot = teloxide::Bot::new(config.bot_token.to_string());
+
+    let container = Arc::new(AppContainer::new(docker, bot));
 
     let threads: Vec<Box<dyn Runnable<AppContainer> + Send + Sync>> = vec![
         Box::new(Monitor::new(Arc::clone(&container))),
-        Box::new(TelegramBot::new(
-            config.bot_token.to_string(),
-            Arc::clone(&container),
-        )),
+        Box::new(TelegramBot::new(Arc::clone(&container))),
         Box::new(Server::new(config.server_port, Arc::clone(&container))),
     ];
 

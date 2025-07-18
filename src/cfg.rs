@@ -9,12 +9,13 @@ pub struct Config {
     pub docker_socket: String,
     pub server_port: u16,
     pub bot_token: String,
+    pub admin_chat_id: i32,
 }
 
 static INSTANCE: Lazy<RwLock<Option<Arc<Config>>>> = Lazy::new(|| RwLock::new(None));
 
 impl Config {
-    pub fn new() -> Self {
+    fn new() -> Self {
         let docker_socket = fetch_env_variable("DOCKER_SOCKET_PATH")
             .unwrap_or_else(|| "/var/run/docker.sock".to_string());
 
@@ -26,11 +27,16 @@ impl Config {
             eprintln!("Error fetching bot token: {}", err);
             std::process::exit(1);
         });
+        
+        let admin_chat_id = fetch_env_variable("ADMIN_CHAT_ID")
+            .and_then(|id| id.parse::<i32>().ok())
+            .unwrap_or(0);
 
         Config {
             docker_socket,
             server_port,
             bot_token,
+            admin_chat_id,
         }
     }
 

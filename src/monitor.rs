@@ -4,6 +4,7 @@ use std::time::{Duration, Instant};
 use bollard::query_parameters::ListContainersOptionsBuilder;
 use crate::AppContainer;
 use crate::{AlertMessage, ContainerStatus, Runnable};
+use crate::cfg::Config;
 
 pub struct Monitor {
     pub container: Arc<AppContainer>,
@@ -26,7 +27,9 @@ impl Runnable<AppContainer> for Monitor {
             let container = self.get_container();
 
             let options = Some(ListContainersOptionsBuilder::default().all(true).build());
-
+            
+            let chat_id = Config::instance().await.admin_chat_id.to_string();
+            
             match container.docker.list_containers(options).await {
                 Ok(containers) => {
                     container.counter.store(containers.len() as u32, std::sync::atomic::Ordering::SeqCst);
@@ -71,6 +74,7 @@ impl Runnable<AppContainer> for Monitor {
                                     container_id: id.clone(),
                                     message: msg,
                                     timestamp: now.into(),
+                                    chat_id: Some(chat_id.clone()),
                                 });
                             } else if let Some(since) = state.last_unhealthy {
                                 if now.duration_since(since.into()) >= Duration::from_secs(1800) && !state.acknowledged {
@@ -78,6 +82,7 @@ impl Runnable<AppContainer> for Monitor {
                                         container_id: id.clone(),
                                         message: format!("Container {} is STILL unhealthy after 30 minutes.", name),
                                         timestamp: now.into(),
+                                        chat_id: Some(chat_id.clone()),
                                     });
 
                                     state.last_unhealthy = Some(now.into());
@@ -90,6 +95,7 @@ impl Runnable<AppContainer> for Monitor {
                                 container_id: id.clone(),
                                 message: format!("Container {} has recovered and is now healthy.", name),
                                 timestamp: now.into(),
+                                chat_id: Some(chat_id.clone()),
                             });
 
                             state.is_healthy = true;

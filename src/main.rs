@@ -3,6 +3,7 @@ mod cfg;
 mod monitor;
 mod runnable;
 mod server;
+mod sender;
 
 use crate::bot::TelegramBot;
 use crate::monitor::Monitor;
@@ -23,6 +24,7 @@ pub struct AlertMessage {
     pub container_id: String,
     pub message: String,
     pub timestamp: Instant,
+    pub chat_id: Option<String>,
 }
 
 #[derive(Clone, Debug)]
@@ -78,6 +80,7 @@ async fn main() {
         Box::new(Monitor::new(Arc::clone(&container))),
         Box::new(TelegramBot::new(Arc::clone(&container))),
         Box::new(Server::new(config.server_port, Arc::clone(&container))),
+        Box::new(sender::Sender::new(Arc::clone(&container))),
     ];
 
     let handles = threads

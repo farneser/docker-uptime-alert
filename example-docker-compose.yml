@@ -1,0 +1,16 @@
+version: '3.7'
+
+services:
+    app:
+        image: docker-uptime-alert
+        build: .
+        container_name: docker-uptime-alert
+        restart: unless-stopped
+        ports:
+            - "3000:3000"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        environment:
+            - TELEGRAM_BOT_TOKEN=1234567890:ABCDEFGHIJKLMNOPQRSTUVWXYZ
+            - ADMIN_CHAT_ID=123456789
+            - RUST_LOG=info

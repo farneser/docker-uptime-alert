@@ -1,8 +1,8 @@
+use dotenv::dotenv;
+use once_cell::sync::Lazy;
 use std::env;
 use std::path::Path;
 use std::sync::Arc;
-use dotenv::dotenv;
-use once_cell::sync::Lazy;
 use tokio::sync::RwLock;
 
 pub struct Config {
@@ -27,7 +27,7 @@ impl Config {
             eprintln!("Error fetching bot token: {}", err);
             std::process::exit(1);
         });
-        
+
         let admin_chat_id = fetch_env_variable("ADMIN_CHAT_ID")
             .and_then(|id| id.parse::<i32>().ok())
             .unwrap_or(0);

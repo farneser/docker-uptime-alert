@@ -1,12 +1,12 @@
+use crate::cfg::Config;
 use crate::runnable::Runnable;
 use crate::{AlertMessage, AppContainer};
 use log::info;
 use std::sync::atomic::Ordering;
 use std::sync::Arc;
 use teloxide::respond;
-use teloxide::types::{ChatId, Message};
+use teloxide::types::Message;
 use tokio::time::Instant;
-use crate::cfg::Config;
 
 #[derive(Clone, Debug)]
 pub struct TelegramBot {
@@ -42,18 +42,18 @@ impl Runnable<AppContainer> for TelegramBot {
 
             async move {
                 let chat_id = Config::instance().await.admin_chat_id;
-                
+
                 if msg.chat.id.to_string() != chat_id.to_string() {
                     info!("Received message from unauthorized chat ID: {}", msg.chat.id);
-                    
+
                     return respond(());
                 }
-                
+
                 if let Some(text) = msg.text() {
                     info!("Received message: {}", text);
 
                     container.counter.fetch_add(1, Ordering::SeqCst);
-                    
+
                     container.alert_queue.lock().await.push_back(
                         AlertMessage {
                             container_id: "telegram_bot".to_string(),
@@ -62,13 +62,12 @@ impl Runnable<AppContainer> for TelegramBot {
                             chat_id: Some(msg.chat.id.to_string()),
                         }
                     );
-                    info!("{}", container.alert_queue.lock().await.len());
                 } else {
                     info!("Received a non-text message");
                 }
                 respond(())
             }
         })
-        .await;
+            .await;
     }
 }

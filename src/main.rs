@@ -70,7 +70,7 @@ async fn main() {
     let config = cfg::Config::instance().await;
 
     let docker = Docker::connect_with_socket(config.docker_socket.as_str(), 20, API_DEFAULT_VERSION)
-            .expect("Failed to connect to Docker");
+        .expect("Failed to connect to Docker");
 
     let bot = teloxide::Bot::new(config.bot_token.to_string());
 

@@ -1,8 +1,8 @@
+use crate::runnable::Runnable;
+use crate::AppContainer;
 use std::sync::Arc;
 use teloxide::requests::Requester;
 use tokio::time::{self, Duration};
-use crate::AppContainer;
-use crate::runnable::Runnable;
 
 pub struct Sender {
     pub container: Arc<AppContainer>,

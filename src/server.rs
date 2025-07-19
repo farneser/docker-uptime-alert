@@ -1,6 +1,5 @@
 use crate::runnable::Runnable;
 use crate::AppContainer;
-use axum::extract::State;
 use axum::response::Html;
 use axum::routing::get;
 use axum::Router;
@@ -33,7 +32,7 @@ impl Runnable<AppContainer> for Server {
             .route("/", get(docker_status))
             .with_state(container);
 
-        let addr = SocketAddr::from(([127, 0, 0, 1], self.port));
+        let addr = SocketAddr::from(([0, 0, 0, 0], self.port));
 
         let listener = net::TcpListener::bind(&addr).await.unwrap();
 
@@ -43,27 +42,10 @@ impl Runnable<AppContainer> for Server {
     }
 }
 
-use std::fmt::Write;
-
-async fn docker_status(State(container): State<Arc<AppContainer>>) -> Html<String> {
-    let mut messages = container.alert_queue.lock().await;
+async fn docker_status() -> Html<String> {
     let mut alerts_html = String::new();
 
-    if !messages.is_empty() {
-        alerts_html.push_str("<h2>Alert Messages</h2><ul>");
-        while let Some(alert) = messages.pop_front() {
-            write!(
-                alerts_html,
-                "<li>[{}] {}: {}</li>",
-                alert.timestamp.elapsed().as_secs(),
-                alert.container_id,
-                alert.message
-            ).unwrap();
-        }
-        alerts_html.push_str("</ul>");
-    } else {
-        alerts_html.push_str("<h2>No alerts at the moment.</h2>");
-    }
+    alerts_html.push_str("<h2>Working...</h2>");
 
     Html(alerts_html)
 }
